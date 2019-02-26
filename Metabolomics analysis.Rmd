@@ -1,0 +1,45 @@
+---
+title: "Metabolomics analysis"
+author: "Emily Flam"
+date: "February 22, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+import data
+```{R}
+#Set working directory
+setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort")
+#Load file
+metabolomics <- read.csv("010319(HILIC emily human heart patient 1007-1635).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+```
+
+Format Data
+```{R}
+#rename columns so that metabolite info will not be lost when redundant sample label rows are removed
+#First metabolite name is inappropriately assigned to first column name. Must move this metabolite manually before adjusting all others
+metabolomics[1,1] <- colnames(metabolomics)[1]
+colnames(metabolomics)[1] <- "metabolite"
+
+#Split metabolomics table into positive and negative modes
+PosNegSplit <- as.numeric(rownames(metabolomics[which(metabolomics$metabolite == 'positive mode'),]))
+NegativeMode <- metabolomics[1:(PosNegSplit-1),]
+PositiveMode <- metabolomics[(PosNegSplit+1):nrow(metabolomics),]
+
+#Replace "Parent C12" with metabolite name so that association is not lost when redundant label rows are deleted
+#negativeMode first because I have already done this for one row
+NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 != 0 & as.numeric(rownames(NegativeMode))>1),1] <-   NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 == 0),1]
+#remove redundant sample ID rows (currently every other row)
+NegativeMode <- NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 != 0),]
+
+#Repeat for positive mode
+#negativeMode first because I have already done this for one row
+PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 == 0),1] <-   PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 != 0),1]
+#remove redundant sample ID rows (currently every other row)
+PositiveMode <- PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 == 0),]
+
+
+```
