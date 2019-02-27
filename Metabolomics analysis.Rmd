@@ -34,12 +34,46 @@ PositiveMode <- metabolomics[(PosNegSplit+1):nrow(metabolomics),]
 NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 != 0 & as.numeric(rownames(NegativeMode))>1),1] <-   NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 == 0),1]
 #remove redundant sample ID rows (currently every other row)
 NegativeMode <- NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 != 0),]
+#Remove any redundant rows; assumes that the rows are together in dataframe
+NegativeMode <- NegativeMode[which(duplicated(NegativeMode) == FALSE),]
+#Make metabolite rownames and delete first column
+rownames(NegativeMode) <- NegativeMode$metabolite
+NegativeMode <- NegativeMode[,-1]
 
 #Repeat for positive mode
 #negativeMode first because I have already done this for one row
 PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 == 0),1] <-   PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 != 0),1]
 #remove redundant sample ID rows (currently every other row)
 PositiveMode <- PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 == 0),]
+#Make metabolite rownames and delete first column
+PositiveMode <- PositiveMode[,-1]
+#Remove any redundant rows; assumes that the rows are together in dataframe
+PositiveMode <- PositiveMode[which(duplicated(PositiveMode) == FALSE),]
+#Make metabolite rownames and delete first column
+rownames(PositiveMode) <- PositiveMode$metabolite
+PositiveMode <- PositiveMode[,-1]
 
-##### whatevs
 ```
+
+Create function to normalize Negative Mode data
+Normalization will be within sample by median (scaled so median metabolite value equals 1)
+```{R}
+
+NegNorm <- function(Neg_dat){
+  #Create a matrix with twice the columns of original data matrix to store normalized data for each sample
+  #NegativeModeNorm <- matrix(nrow=nrow(as.matrix(Neg_dat)), ncol=ncol(as.matrix(Neg_dat))*2, dimnames = list(NULL,rep(colnames(Neg_dat), each=2)))
+
+  #remove first column and copy metabolite column from original matrix; metabolite names will not need normalized column
+  #NegativeModeNorm <- NegativeModeNorm[,-1]
+  #NegativeModeNorm[,1] <- Neg_dat[,1]
+  
+  #Copy all other columns and put into even columns of new matrix
+  #NegativeModeNorm[ ,which(c(2:ncol(NegativeModeNorm) %% 2 == 0))] <- Neg_dat[,2:ncol(Neg_dat)]
+  
+  Norm <-apply(Neg_dat[,-1])
+  
+}
+
+```
+
+
