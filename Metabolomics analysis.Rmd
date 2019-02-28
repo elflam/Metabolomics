@@ -59,19 +59,23 @@ Create function to normalize Negative Mode data
 Normalization will be within sample by median (scaled so median metabolite value equals 1)
 ```{R}
 
-NegNorm <- function(Neg_dat){
-  #Create a matrix with twice the columns of original data matrix to store normalized data for each sample
-  #NegativeModeNorm <- matrix(nrow=nrow(as.matrix(Neg_dat)), ncol=ncol(as.matrix(Neg_dat))*2, dimnames = list(NULL,rep(colnames(Neg_dat), each=2)))
+##Function to normalize to median of a vector
+MedianNorm <- function(datVec){
+  NormVec <- datVec / median(datVec)
+  return(NormVec)
+}
 
-  #remove first column and copy metabolite column from original matrix; metabolite names will not need normalized column
-  #NegativeModeNorm <- NegativeModeNorm[,-1]
-  #NegativeModeNorm[,1] <- Neg_dat[,1]
-  
-  #Copy all other columns and put into even columns of new matrix
-  #NegativeModeNorm[ ,which(c(2:ncol(NegativeModeNorm) %% 2 == 0))] <- Neg_dat[,2:ncol(Neg_dat)]
-  
-  Norm <-apply(Neg_dat[,-1])
-  
+##Function to normalize each column of a dataframe and combine original and normalized columns into one dataframe 
+DataNorm <- function(datFrame){
+  #Run normalization on each row of data frame to create second dataframe
+  Norm <-apply(datFrame,2,MedianNorm)
+  #Edit colnames to include normalization
+  colnames(Norm) <- paste0(colnames(Norm),"_Norm")
+  #combine original and normalized columns together
+  ComboDat <- cbind(datFrame, Norm)
+  #sort rows so that sample columns cluster together
+  ComboDat <- ComboDat[,order(colnames(ComboDat))]
+  return(ComboDat)
 }
 
 ```
