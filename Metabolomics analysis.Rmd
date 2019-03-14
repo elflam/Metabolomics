@@ -9,12 +9,72 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Create function to normalize data
+Normalization will be within sample by median (scaled so median metabolite value equals 1)
+```{R}
+
+##Function to normalize to median of a vector
+MedianNorm <- function(datVec){
+  NormVec <- datVec / median(datVec)
+  return(NormVec)
+}
+
+##Function to normalize each column of a dataframe and combine original and normalized columns into one dataframe 
+DataNorm <- function(datFrame){
+  #Run normalization on each row of data frame to create second dataframe
+  Norm <-apply(datFrame,2,MedianNorm)
+  #Edit colnames to include normalization
+  colnames(Norm) <- paste0(colnames(Norm),"_Norm")
+  #combine original and normalized columns together
+  ComboDat <- cbind(datFrame, Norm)
+  #sort rows so that sample columns cluster together
+  ComboDat <- ComboDat[,order(colnames(ComboDat))]
+  return(ComboDat)
+}
+
+##Function to run t-test HF vs NF on normalized metabolomics data 
+###consider transpose
+Tmet <- function(normDat){
+  #grab normalized columns
+  Norms <- normDat[,grep("Norm", colnames(normDat))]
+  #Make new row with HF status
+  Norms <- rbind(Norms, c(sapply(strsplit(colnames(Norms), split="_"), function(x){x[[1]]})))
+  rownames(Norms)[nrow(Norms)] <- "Disease"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #t test
+  #Tvec <- numeric()
+  #for (i in 1:(ncol(Norms)-1)){
+    #Tvec[i] <- t.test(as.numeric(Norms[,i]),Norms$Disease)
+  #}
+  #Tvec <- apply(Norms,2,function(X){t.test(~Disease, data=Norms)})
+  #Tvec <- apply(Norms[nrow(Norms)-1,], 1, function(x){t.test(x~as.character(Norms[nrow(Norms),]))})
+}
+
+```
+
 import data
 ```{R}
 #Set working directory
 setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort")
 #Load file
 metabolomics <- read.csv("010319(HILIC emily human heart patient 1007-1635).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+DiseaseID <- read.csv("HumanHFcohortDiseaseIds.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+
+#remove any columns with suspected sample degradation - change loop vector to specify which columns
+for (i in c(3,7)){
+  metabolomics <- metabolomics[,-i]
+}
+```
+Assign disease status to sample labels
+```{R}
+
+HFsamp <- sapply(DiseaseID$Sample[which(DiseaseID$CHF.Etiology != "NF")], function(x){grep(x,colnames(metabolomics), value=TRUE)})
+NFsamp <- sapply(DiseaseID$Sample[which(DiseaseID$CHF.Etiology == "NF")], function(x){grep(x,colnames(metabolomics), value=TRUE)})
+
+colnames(metabolomics)[which(colnames(metabolomics) %in% HFsamp)] <- sapply(colnames(metabolomics)[which(colnames(metabolomics) %in% HFsamp)], function(x){paste0("HF_",x)}) 
+
+colnames(metabolomics)[which(colnames(metabolomics) %in% NFsamp)] <- sapply(colnames(metabolomics)[which(colnames(metabolomics) %in% NFsamp)], function(x){paste0("NF_",x)}) 
 ```
 
 Format Data
@@ -55,29 +115,13 @@ PositiveMode <- PositiveMode[,-1]
 
 ```
 
-Create function to normalize Negative Mode data
-Normalization will be within sample by median (scaled so median metabolite value equals 1)
+
+Normalize data and run t test
 ```{R}
 
-##Function to normalize to median of a vector
-MedianNorm <- function(datVec){
-  NormVec <- datVec / median(datVec)
-  return(NormVec)
-}
+NegNorm <- DataNorm(NegativeMode)
+PosNorm <- DataNorm(PositiveMode)
 
-##Function to normalize each column of a dataframe and combine original and normalized columns into one dataframe 
-DataNorm <- function(datFrame){
-  #Run normalization on each row of data frame to create second dataframe
-  Norm <-apply(datFrame,2,MedianNorm)
-  #Edit colnames to include normalization
-  colnames(Norm) <- paste0(colnames(Norm),"_Norm")
-  #combine original and normalized columns together
-  ComboDat <- cbind(datFrame, Norm)
-  #sort rows so that sample columns cluster together
-  ComboDat <- ComboDat[,order(colnames(ComboDat))]
-  return(ComboDat)
-}
+
 
 ```
-
-
