@@ -33,7 +33,6 @@ DataNorm <- function(datFrame){
 }
 
 ##Function to run t-test HF vs NF on normalized metabolomics data 
-###consider transpose
 Tmet <- function(normDat){
   #grab normalized columns
   Norms <- normDat[,grep("Norm", colnames(normDat))]
@@ -43,12 +42,19 @@ Tmet <- function(normDat){
   #transpose table
   Norms <- as.data.frame(t(Norms))
   #t test
-  #Tvec <- numeric()
-  #for (i in 1:(ncol(Norms)-1)){
-    #Tvec[i] <- t.test(as.numeric(Norms[,i]),Norms$Disease)
-  #}
-  #Tvec <- apply(Norms,2,function(X){t.test(~Disease, data=Norms)})
-  #Tvec <- apply(Norms[nrow(Norms)-1,], 1, function(x){t.test(x~as.character(Norms[nrow(Norms),]))})
+  Tvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names(tmpvec) <- as.character(Norms$Disease)
+    Tvec[i] <- t.test(tmpvec[which(names(tmpvec) == "HF")],tmpvec[which(names(tmpvec) == "NF")])$p.value
+  }
+  names(Tvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Tvec)
+}
+
+##Function to separate significantly different metabolites
+DifMet <- function(pvalVec){
+  SigDif <- pvalVec[which(pvalVec < 0.05)]
 }
 
 ```
@@ -122,6 +128,7 @@ Normalize data and run t test
 NegNorm <- DataNorm(NegativeMode)
 PosNorm <- DataNorm(PositiveMode)
 
-
+NegT <- Tmet(NegNorm)
+NegDif <- pvalVec[which(pvalVec < 0.05)]
 
 ```
