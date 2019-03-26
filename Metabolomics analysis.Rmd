@@ -52,10 +52,24 @@ Tmet <- function(normDat){
   return(Tvec)
 }
 
-##Function to separate significantly different metabolites
-DifMet <- function(pvalVec){
-  SigDif <- pvalVec[which(pvalVec < 0.05)]
+Wilcox <- function(normDat){
+  Norms <- normDat[,grep("Norm", colnames(normDat))]
+  #Make new row with HF status
+  Norms <- rbind(Norms, c(sapply(strsplit(colnames(Norms), split="_"), function(x){x[[1]]})))
+  rownames(Norms)[nrow(Norms)] <- "Disease"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #wilcox test
+  Wvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names <- as.character(Norms$Disease)
+    Wvec[i] <- wilcox.test(tmpvec ~ names)$p.value
+  }
+  names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Wvec)
 }
+
 
 ```
 
@@ -129,6 +143,10 @@ NegNorm <- DataNorm(NegativeMode)
 PosNorm <- DataNorm(PositiveMode)
 
 NegT <- Tmet(NegNorm)
-NegDif <- pvalVec[which(pvalVec < 0.05)]
+NegTDif <- NegT[which(NegT < 0.05)]
+
+NegW <- Wilcox(NegNorm)
+NegWDif <- NegW[which(NegW < 0.05)]
+
 
 ```
