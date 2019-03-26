@@ -33,6 +33,7 @@ DataNorm <- function(datFrame){
 }
 
 ##Function to run t-test HF vs NF on normalized metabolomics data 
+##Correct 
 Tmet <- function(normDat){
   #grab normalized columns
   Norms <- normDat[,grep("Norm", colnames(normDat))]
@@ -48,6 +49,8 @@ Tmet <- function(normDat){
     names(tmpvec) <- as.character(Norms$Disease)
     Tvec[i] <- t.test(tmpvec[which(names(tmpvec) == "HF")],tmpvec[which(names(tmpvec) == "NF")])$p.value
   }
+  #FDR correction
+  Tvec <- p.adjust(Tvec, method = "fdr")
   names(Tvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
   return(Tvec)
 }
@@ -66,6 +69,7 @@ Wilcox <- function(normDat){
     names <- as.character(Norms$Disease)
     Wvec[i] <- wilcox.test(tmpvec ~ names)$p.value
   }
+  Wvec <- p.adjust(Tvec, method = "fdr")
   names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
   return(Wvec)
 }
@@ -105,6 +109,7 @@ metabolomics[1,1] <- colnames(metabolomics)[1]
 colnames(metabolomics)[1] <- "metabolite"
 
 #Split metabolomics table into positive and negative modes
+## change to remove row
 PosNegSplit <- as.numeric(rownames(metabolomics[which(metabolomics$metabolite == 'positive mode'),]))
 NegativeMode <- metabolomics[1:(PosNegSplit-1),]
 PositiveMode <- metabolomics[(PosNegSplit+1):nrow(metabolomics),]
