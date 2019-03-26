@@ -122,7 +122,7 @@ rownames(metabolomics) <- c(1:nrow(metabolomics))
 
 
 #remove redundant metabolites
-metabolomics <- metabolomics[which(duplicated(metabolomics$metabolite) == FALSE),]
+#metabolomics <- metabolomics[which(duplicated(metabolomics$metabolite) == FALSE),]
 
 #Replace "Parent C12" with metabolite name so that association is not lost when redundant label rows are deleted
 #negativeMode first because I have already done this for one row
@@ -178,10 +178,10 @@ Normalize data and run t test
 
 metNorm <- DataNorm(metabolomics)
 
-metT <- Tmet(metabolomics)
+metT <- Tmet(metNorm)
 metTDif <- metT[which(metT < 0.05)]
 
-metW <- Wilcox(metabolomics)
+metW <- Wilcox(metNorm)
 metWDif <- metW[which(metW < 0.05)]
 
 
