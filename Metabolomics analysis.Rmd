@@ -163,4 +163,7 @@ upDown[which(upDown < 0)] <- "Down in HF"
 
 MetTable <- cbind(MetTable, upDown[rownames(MetTable)])
 colnames(MetTable) <- c("Wilcoxon + FDR p-val", "HF status")
+
+write.csv(MetTable, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/HumanHFcohortDifferentialMetabolites.csv")
+write.csv(metNormTotal, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/HumanHFcohortMetabolomicsNormalized.csv")
 ```
