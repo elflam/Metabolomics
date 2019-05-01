@@ -67,7 +67,7 @@ Wilcox <- function(normDat){
   for (i in 1:(ncol(Norms)-1)){
     tmpvec <- as.numeric(Norms[,i])
     names <- as.character(Norms$Disease)
-    Wvec[i] <- wilcox.test(tmpvec ~ names)$p.value
+    Wvec[i] <- wilcox.test(tmpvec ~ names, paired = FALSE)$p.value
   }
   Wvec <- p.adjust(Wvec, method = "fdr")
   names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
@@ -108,18 +108,11 @@ Format Data
 metabolomics[1,1] <- colnames(metabolomics)[1]
 colnames(metabolomics)[1] <- "metabolite"
 
-#Split metabolomics table into positive and negative modes
-## change to remove row
-#PosNegSplit <- as.numeric(rownames(metabolomics[which(metabolomics$metabolite == 'positive mode'),]))
-#NegativeMode <- metabolomics[1:(PosNegSplit-1),]
-#PositiveMode <- metabolomics[(PosNegSplit+1):nrow(metabolomics),]
-
 #Remove row separating positive and negative mode metabolites
 PosNegSplit <- as.numeric(rownames(metabolomics[which(metabolomics$metabolite == 'positive mode'),]))
 metabolomics <- metabolomics[-(PosNegSplit),]
 #rename rows because the removed row has interupted the flow of numbers
 rownames(metabolomics) <- c(1:nrow(metabolomics))
-
 
 #remove redundant metabolites
 #metabolomics <- metabolomics[which(duplicated(metabolomics$metabolite) == FALSE),]
@@ -137,46 +130,14 @@ metabolomics <- metabolomics[which(duplicated(metabolomics$metabolite) == FALSE)
 rownames(metabolomics) <- metabolomics$metabolite
 metabolomics <- metabolomics[,-1]
 
-#Replace "Parent C12" with metabolite name so that association is not lost when redundant label rows are deleted
-#negativeMode first because I have already done this for one row
-#NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 != 0 & as.numeric(rownames(NegativeMode))>1),1] <-   NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 == 0),1]
-#remove redundant sample ID rows (currently every other row)
-#NegativeMode <- NegativeMode[which(as.numeric(rownames(NegativeMode)) %% 2 != 0),]
-#Remove any redundant rows; assumes that the rows are together in dataframe
-#NegativeMode <- NegativeMode[which(duplicated(NegativeMode) == FALSE),]
-#Make metabolite rownames and delete first column
-#rownames(NegativeMode) <- NegativeMode$metabolite
-#NegativeMode <- NegativeMode[,-1]
-
-#Repeat for positive mode
-#negativeMode first because I have already done this for one row
-#PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 == 0),1] <-   PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 != 0),1]
-#remove redundant sample ID rows (currently every other row)
-#PositiveMode <- PositiveMode[which(as.numeric(rownames(PositiveMode)) %% 2 == 0),]
-#Make metabolite rownames and delete first column
-#PositiveMode <- PositiveMode[,-1]
-#Remove any redundant rows; assumes that the rows are together in dataframe
-#PositiveMode <- PositiveMode[which(duplicated(PositiveMode) == FALSE),]
-#Make metabolite rownames and delete first column
-#rownames(PositiveMode) <- PositiveMode$metabolite
-#PositiveMode <- PositiveMode[,-1]
-
 ```
 
 
 Normalize data and run t test
 ```{R}
 
-#NegNorm <- DataNorm(NegativeMode)
-#PosNorm <- DataNorm(PositiveMode)
-
-#NegT <- Tmet(NegNorm)
-#NegTDif <- NegT[which(NegT < 0.05)]
-
-#NegW <- Wilcox(NegNorm)
-#NegWDif <- NegW[which(NegW < 0.05)]
-
-metNorm <- DataNorm(metabolomics)
+metNormTotal <- DataNorm(metabolomics)
+metNorm <- metNormTotal[grep("Norm", colnames(metNormTotal))]
 
 metT <- Tmet(metNorm)
 metTDif <- metT[which(metT < 0.05)]
@@ -185,4 +146,21 @@ metW <- Wilcox(metNorm)
 metWDif <- metW[which(metW < 0.05)]
 
 
+```
+
+```{R} 
+##Create table with pvals of significantly different metabolites and indicate which are up or down 
+
+#create output table of differentially abundant metabolites
+MetTable <- as.matrix(metWDif)
+
+#decide which metabolites are up/down in HF
+MeanDiff <- apply(metNorm,1,FUN=function(x){mean(x[grep("HF", colnames(metNorm))]) - mean(x[grep("NF", colnames(metNorm))])})
+names(UpDown) <- rownames(metNorm)
+upDown <- MeanDiff
+upDown[which(upDown > 0)] <- "Up in HF"
+upDown[which(upDown < 0)] <- "Down in HF"
+
+MetTable <- cbind(MetTable, upDown[rownames(MetTable)])
+colnames(MetTable) <- c("Wilcoxon + FDR p-val", "HF status")
 ```
