@@ -34,11 +34,9 @@ DataNorm <- function(datFrame){
 
 ##Function to run t-test HF vs NF on normalized metabolomics data 
 ##Correct 
-Tmet <- function(normDat){
-  #grab normalized columns
-  Norms <- normDat[,grep("Norm", colnames(normDat))]
+TmetHF <- function(normDat){
   #Make new row with HF status
-  Norms <- rbind(Norms, c(sapply(strsplit(colnames(Norms), split="_"), function(x){x[[1]]})))
+  Norms <- rbind(normDat, c(sapply(strsplit(colnames(normDat), split="_"), function(x){x[[1]]})))
   rownames(Norms)[nrow(Norms)] <- "Disease"
   #transpose table
   Norms <- as.data.frame(t(Norms))
@@ -55,10 +53,9 @@ Tmet <- function(normDat){
   return(Tvec)
 }
 
-Wilcox <- function(normDat){
-  Norms <- normDat[,grep("Norm", colnames(normDat))]
+WilcoxHF <- function(normDat){
   #Make new row with HF status
-  Norms <- rbind(Norms, c(sapply(strsplit(colnames(Norms), split="_"), function(x){x[[1]]})))
+  Norms <- rbind(normDat, c(sapply(strsplit(colnames(normDat), split="_"), function(x){x[[1]]})))
   rownames(Norms)[nrow(Norms)] <- "Disease"
   #transpose table
   Norms <- as.data.frame(t(Norms))
@@ -74,6 +71,105 @@ Wilcox <- function(normDat){
   return(Wvec)
 }
 
+WilcoxG_HF <- function(normDat){
+  #Get HF samples
+  Norms <- normDat[,grep("HF", colnames(normDat))]
+  #Make new row with M/F status
+  Norms <- rbind(Norms, DiseaseID$Gender)
+  rownames(Norms)[nrow(Norms)] <- "Gender"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #wilcox test
+  Wvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names <- as.character(Norms$Gender)
+    Wvec[i] <- wilcox.test(tmpvec ~ names, paired = FALSE)$p.value
+  }
+  Wvec <- p.adjust(Wvec, method = "fdr")
+  names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Wvec)
+}
+
+WilcoxG_NF <- function(normDat){
+  #Get NF samples
+  Norms <- normDat[,grep("NF", colnames(normDat))]
+  #Make new row with M/F status
+  Norms <- rbind(Norms, DiseaseID$Gender)
+  rownames(Norms)[nrow(Norms)] <- "Gender"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #wilcox test
+  Wvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names <- as.character(Norms$Gender)
+    Wvec[i] <- wilcox.test(tmpvec ~ names, paired = FALSE)$p.value
+  }
+  Wvec <- p.adjust(Wvec, method = "fdr")
+  names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Wvec)
+}
+
+WilcoxR_HF <- function(normDat){
+  #Get HF samples
+  Norms <- normDat[,grep("HF", colnames(normDat))]
+  #Make new row with M/F status
+  Norms <- rbind(Norms, DiseaseID$Race)
+  rownames(Norms)[nrow(Norms)] <- "Race"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #wilcox test
+  Wvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names <- as.character(Norms$Race)
+    Wvec[i] <- wilcox.test(tmpvec ~ names, paired = FALSE)$p.value
+  }
+  Wvec <- p.adjust(Wvec, method = "fdr")
+  names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Wvec)
+}
+
+WilcoxR_NF <- function(normDat){
+  #Get NF samples
+  Norms <- normDat[,grep("NF", colnames(normDat))]
+  #Make new row with M/F status
+  Norms <- rbind(Norms, DiseaseID$Race)
+  rownames(Norms)[nrow(Norms)] <- "Race"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #wilcox test
+  Wvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names <- as.character(Norms$Race)
+    Wvec[i] <- wilcox.test(tmpvec ~ names, paired = FALSE)$p.value
+  }
+  Wvec <- p.adjust(Wvec, method = "fdr")
+  names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Wvec)
+}
+
+WilcoxMet_EF <- function(normDat){
+  #Make new row with M/F status
+  Norms <- rbind(normDat, DiseaseID$EF)
+  rownames(Norms)[nrow(Norms)] <- "EF"
+  #transpose table
+  Norms <- as.data.frame(t(Norms))
+  #wilcox test
+  Wvec <- numeric()
+  for (i in 1:(ncol(Norms)-1)){
+    tmpvec <- as.numeric(Norms[,i])
+    names <- as.numeric(Norms$EF)
+    Wvec[i] <- wilcox.test(tmpvec,names, paired = FALSE)$p.value
+  }
+  Wvec <- p.adjust(Wvec, method = "fdr")
+  names(Wvec) <- colnames(Norms)[1:(ncol(Norms)-1)]
+  return(Wvec)
+}
+
+
 
 ```
 
@@ -84,6 +180,10 @@ setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort")
 #Load file
 metabolomics <- read.csv("010319(HILIC emily human heart patient 1007-1635).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 DiseaseID <- read.csv("HumanHFcohortDiseaseIds.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+
+#order files by sample ID just in case
+metabolomics <- metabolomics[,order(colnames(metabolomics),decreasing = FALSE)]
+DiseaseID <- DiseaseID[order(DiseaseID$Sample,decreasing = FALSE),]
 
 #remove any columns with suspected sample degradation - change loop vector to specify which columns
 for (i in c(3,7)){
@@ -139,12 +239,33 @@ Normalize data and run t test
 metNormTotal <- DataNorm(metabolomics)
 metNorm <- metNormTotal[grep("Norm", colnames(metNormTotal))]
 
-metT <- Tmet(metNorm)
-metTDif <- metT[which(metT < 0.05)]
+#HF vs NF T test
+metTHF <- TmetHF(metNorm)
+metTDifHF <- metTHF[which(metTHF < 0.05)]
 
-metW <- Wilcox(metNorm)
-metWDif <- metW[which(metW < 0.05)]
+#HF vs NF Wilcoxon
+metWHF <- WilcoxHF(metNorm)
+metWDifHF <- metWHF[which(metWHF < 0.05)]
 
+#HF M vs F
+metWG_HF <- WilcoxG_HF(metNorm)
+metWDifG_HF <- metWG_HF[which(metWG_HF < 0.05)]
+
+#HF AA vs C
+metWR_HF <-WilcoxR_HF(metNorm)
+metWDifR_HF <- metWR_HF[which(metWR_HF < 0.05)]
+
+#NF M vs F
+metWG_NF <- WilcoxG_NF(metNorm)
+metWDifG_HF <- metWG_HF[which(metWG_HF < 0.05)]
+
+#HF AA vs C
+metWR_NF <-WilcoxR_NF(metNorm)
+metWDifR_NF <- metWR_NF[which(metWR_NF < 0.05)]
+
+#Met ~ EF
+metEF <- WilcoxMet_EF(metNorm)
+metWDif_EF <- metEF[which(metEF < 0.05)]
 
 ```
 
