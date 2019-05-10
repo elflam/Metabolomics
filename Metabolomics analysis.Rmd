@@ -169,7 +169,17 @@ WilcoxMet_EF <- function(normDat){
   return(Wvec)
 }
 
-
+#Calculate fold change
+foldChangeMat <- function(normDat){
+  #create empty vector to collect values
+  folds <- numeric()
+  for (i in 1:nrow(normDat)){
+    folds[i] <- foldchange(mean(as.numeric(normDat[i,grep("HF", colnames(normDat))])),mean(as.numeric(normDat[i,grep("NF", colnames(normDat))])))
+    names(folds)[i] <- rownames(normDat)[i]
+  }
+  return (folds)
+  #Newmat <- apply(normDat, 1, FUN = function(x){foldchange(mean(as.numeric(normDat[x,grep("HF", colnames(normDat))])),mean(as.numeric(normDat[x,grep("NF", colnames(normDat))])))})
+}
 
 ```
 
@@ -247,44 +257,56 @@ metTDifHF <- metTHF[which(metTHF < 0.05)]
 metWHF <- WilcoxHF(metNorm)
 metWDifHF <- metWHF[which(metWHF < 0.05)]
 
+#fold change
+FC <- foldChangeMat(metNorm)
+
 #HF M vs F
-metWG_HF <- WilcoxG_HF(metNorm)
-metWDifG_HF <- metWG_HF[which(metWG_HF < 0.05)]
+#metWG_HF <- WilcoxG_HF(metNorm)
+#metWDifG_HF <- metWG_HF[which(metWG_HF < 0.05)]
 
 #HF AA vs C
-metWR_HF <-WilcoxR_HF(metNorm)
-metWDifR_HF <- metWR_HF[which(metWR_HF < 0.05)]
+#metWR_HF <-WilcoxR_HF(metNorm)
+#metWDifR_HF <- metWR_HF[which(metWR_HF < 0.05)]
 
 #NF M vs F
-metWG_NF <- WilcoxG_NF(metNorm)
-metWDifG_HF <- metWG_HF[which(metWG_HF < 0.05)]
+#metWG_NF <- WilcoxG_NF(metNorm)
+#metWDifG_HF <- metWG_HF[which(metWG_HF < 0.05)]
 
 #HF AA vs C
-metWR_NF <-WilcoxR_NF(metNorm)
-metWDifR_NF <- metWR_NF[which(metWR_NF < 0.05)]
+#metWR_NF <-WilcoxR_NF(metNorm)
+#metWDifR_NF <- metWR_NF[which(metWR_NF < 0.05)]
 
 #Met ~ EF
-metEF <- WilcoxMet_EF(metNorm)
-metWDif_EF <- metEF[which(metEF < 0.05)]
+#metEF <- WilcoxMet_EF(metNorm)
+#metWDif_EF <- metEF[which(metEF < 0.05)]
 
 ```
 
 ```{R} 
 ##Create table with pvals of significantly different metabolites and indicate which are up or down 
+library(gtools)
 
 #create output table of differentially abundant metabolites
-MetTable <- as.matrix(metWDif)
+MetTable <- as.data.frame(metWDifHF)
 
 #decide which metabolites are up/down in HF
 MeanDiff <- apply(metNorm,1,FUN=function(x){mean(x[grep("HF", colnames(metNorm))]) - mean(x[grep("NF", colnames(metNorm))])})
-names(UpDown) <- rownames(metNorm)
 upDown <- MeanDiff
 upDown[which(upDown > 0)] <- "Up in HF"
 upDown[which(upDown < 0)] <- "Down in HF"
+names(upDown) <- rownames(metNorm)
 
-MetTable <- cbind(MetTable, upDown[rownames(MetTable)])
-colnames(MetTable) <- c("Wilcoxon + FDR p-val", "HF status")
+MetTable <- cbind(MetTable, upDown[rownames(MetTable)],FC[rownames(MetTable)], as.numeric(foldchange2logratio(FC[rownames(MetTable)])))
+colnames(MetTable) <- c("p-val", "HF status", "fold change", "log2FoldChange")
 
 write.csv(MetTable, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/HumanHFcohortDifferentialMetabolites.csv")
 write.csv(metNormTotal, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/HumanHFcohortMetabolomicsNormalized.csv")
+```
+
+```{R}
+#Make plots
+
+library(EnhancedVolcano)
+EnhancedVolcano(MetTable, lab = rownames(MetTable),x="log2FoldChange", y="p-val")
+
 ```
