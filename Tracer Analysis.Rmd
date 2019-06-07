@@ -1,0 +1,30 @@
+---
+title: "tracer analysis"
+author: "Emily Flam"
+date: "June 7, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## import data
+```{R}
+#set wd lab desktop
+setwd("C:/Users/eflam/Box Sync/Data/slice tracing/")
+#setwd laptop
+#setwd("C:/Users/Emily/Desktop/Box Sync/Data/slice tracing/")
+
+#Import data
+normalized <- read.csv("020119(Ex emily human heart slice 13c-tracer time course EF1-46) normalized.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+
+poolSize <- read.csv("020119(Ex emily human heart slice 13c-tracer time course EF1-46) pool size.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+
+```
+
+```{R}
+
+
+
+```
