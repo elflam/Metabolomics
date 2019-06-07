@@ -187,9 +187,9 @@ import data
 ```{R}
 #Set working directory
 #on laptop
-#setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort")
+#setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs")
 #on lab desktop
-setwd("C:/Users/eflam/Box Sync/Data/Human HF cohort/")
+setwd("C:/Users/eflam/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs")
 #Load file
 metabolomics <- read.csv("010319(HILIC emily human heart patient 1007-1635).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 DiseaseID <- read.csv("HumanHFcohortDiseaseIds.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
@@ -291,7 +291,6 @@ FC <- foldChangeMat(metNorm)
 library(gtools)
 
 #create output table of differentially abundant metabolites
-#MetTable <- as.data.frame(metWDifHF)
 MetTable <- as.data.frame(metWHF)
 
 #decide which metabolites are up/down in HF
@@ -304,14 +303,22 @@ names(upDown) <- rownames(metNorm)
 MetTable <- cbind(MetTable, upDown[rownames(MetTable)],FC[rownames(MetTable)], as.numeric(foldchange2logratio(FC[rownames(MetTable)])))
 colnames(MetTable) <- c("p-val", "HF status", "fold change", "log2FoldChange")
 
-write.csv(MetTable, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/HumanHFcohortDifferentialMetabolites.csv")
-write.csv(metNormTotal, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/HumanHFcohortMetabolomicsNormalized.csv")
+MetTableDif <- MetTable[names(metWDifHF),]
+
+write.csv(MetTable, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortAllMetabolites.csv")
+write.csv(MetTableDif, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortDifferentialMetabolites.csv")
+write.csv(metNormTotal, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortMetabolomicsNormalized.csv")
 ```
 
 ```{R}
 #Make plots
 
 library(EnhancedVolcano)
-EnhancedVolcano(MetTable, lab = rownames(MetTable),x="log2FoldChange", y="p-val")
+
+#volcano plot with all metabolites
+EnhancedVolcano(MetTable, lab = rownames(MetTable),x="log2FoldChange", y="p-val", title = "Failing vs Non-failing Human Hearts")
+#volcano plot with only differential metabolites
+EnhancedVolcano(MetTableDif, lab = rownames(MetTableDif),x="log2FoldChange", y="p-val", title = "Failing vs Non-failing Human Hearts")
+
 
 ```
