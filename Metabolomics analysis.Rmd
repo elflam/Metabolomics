@@ -169,7 +169,7 @@ WilcoxMet_EF <- function(normDat){
   return(Wvec)
 }
 
-#Calculate fold change
+#Calculate fold change, requires gtools
 foldChangeMat <- function(normDat){
   #create empty vector to collect values
   folds <- numeric()
@@ -186,7 +186,10 @@ foldChangeMat <- function(normDat){
 import data
 ```{R}
 #Set working directory
-setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort")
+#on laptop
+#setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort")
+#on lab desktop
+setwd("C:/Users/eflam/Box Sync/Data/Human HF cohort/")
 #Load file
 metabolomics <- read.csv("010319(HILIC emily human heart patient 1007-1635).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 DiseaseID <- read.csv("HumanHFcohortDiseaseIds.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
@@ -243,8 +246,9 @@ metabolomics <- metabolomics[,-1]
 ```
 
 
-Normalize data and run t test
+Normalize data and run stat functions
 ```{R}
+library(gtools)
 
 metNormTotal <- DataNorm(metabolomics)
 metNorm <- metNormTotal[grep("Norm", colnames(metNormTotal))]
@@ -287,7 +291,8 @@ FC <- foldChangeMat(metNorm)
 library(gtools)
 
 #create output table of differentially abundant metabolites
-MetTable <- as.data.frame(metWDifHF)
+#MetTable <- as.data.frame(metWDifHF)
+MetTable <- as.data.frame(metWHF)
 
 #decide which metabolites are up/down in HF
 MeanDiff <- apply(metNorm,1,FUN=function(x){mean(x[grep("HF", colnames(metNorm))]) - mean(x[grep("NF", colnames(metNorm))])})
