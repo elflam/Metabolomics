@@ -21,6 +21,35 @@ normalized <- read.csv("020119(Ex emily human heart slice 13c-tracer time course
 
 poolSize <- read.csv("020119(Ex emily human heart slice 13c-tracer time course EF1-46) pool size.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 
+#import sample ID sheet 
+sampleID <- read.csv("SampleIDs.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+
+```
+#label datasheets with disease status and tracer 
+```{R}
+#create vector linking sample IDs to disease status
+sampDis <- sampleID$Disease.Status[which(sampleID$sample %in% colnames(normalized))]
+names(sampDis) <- sampleID$sample[which(sampleID$sample %in% colnames(normalized))]
+
+#create vector linking sample IDs to tracer
+sampTracer <- sampleID$tracer[which(sampleID$sample %in% colnames(normalized))]
+names(sampTracer) <- sampleID$sample[which(sampleID$sample %in% colnames(normalized))]
+
+#create vector linking sample IDs to time point
+sampTime <- sampleID$time[which(sampleID$sample %in% colnames(normalized))]
+names(sampTracer) <- sampleID$sample[which(sampleID$sample %in% colnames(normalized))]
+
+#add rows to normalized data frame
+normalized <- rbind(normalized, c(c("NA", "NA"),sampDis))
+rownames(normalized)[nrow(normalized)] <- "Disease Status"
+
+normalized <- rbind(normalized, c(c("NA", "NA"),sampTracer))
+rownames(normalized)[nrow(normalized)] <- "Tracer"
+
+normalized <- rbind(normalized, c(c("NA", "NA"),sampTime))
+rownames(normalized)[nrow(normalized)] <- "Time"
+
+
 ```
 
 ```{R}
@@ -28,3 +57,6 @@ poolSize <- read.csv("020119(Ex emily human heart slice 13c-tracer time course E
 
 
 ```
+
+
+
