@@ -18,6 +18,8 @@ setwd("C:/Users/eflam/Box Sync/Data/slice tracing/")
 
 #Import data
 normalized <- read.csv("020119(Ex emily human heart slice 13c-tracer time course EF1-46) normalized.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+#make rownames a combination of metabolite and positional labeling
+rownames(normalized) <- paste0(normalized[,1], normalized[,2])
 
 poolSize <- read.csv("020119(Ex emily human heart slice 13c-tracer time course EF1-46) pool size.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 
@@ -25,6 +27,8 @@ poolSize <- read.csv("020119(Ex emily human heart slice 13c-tracer time course E
 sampleID <- read.csv("SampleIDs.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 
 ```
+
+
 #label datasheets with disease status and tracer 
 ```{R}
 #create vector linking sample IDs to disease status
@@ -52,9 +56,14 @@ rownames(normalized)[nrow(normalized)] <- "Time"
 
 ```
 
+#combine all values for a metabolite (except M+0) to get total enrichment regardless of number of carbons
 ```{R}
 
-
+totalEnrich <- numeric(length = length(unique(normalized$Compound)))
+names(totalEnrich) <- unique(normalized$Compound)
+for (i in unique(normalized$Compound)){
+  totalEnrich[i] <- sum(normalized[which(normalized$Compound == i && normalized$Label != 0),])
+}
 
 ```
 
