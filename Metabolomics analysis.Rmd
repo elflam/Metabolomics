@@ -193,6 +193,7 @@ setwd("C:/Users/eflam/Box Sync/Data/Human HF cohort/raw metabolomics data and pi
 #Load file
 metabolomics <- read.csv("010319(HILIC emily human heart patient 1007-1635).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 DiseaseID <- read.csv("HumanHFcohortDiseaseIds.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+HMDB <- read.csv("CAMP_compounds_HMDB.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 
 #order files by sample ID just in case
 metabolomics <- metabolomics[,order(colnames(metabolomics),decreasing = FALSE)]
@@ -261,8 +262,17 @@ metTDifHF <- metTHF[which(metTHF < 0.05)]
 metWHF <- WilcoxHF(metNorm)
 metWDifHF <- metWHF[which(metWHF < 0.05)]
 
+#convert differential metabolites to HMDB code for metaboanalyst
+HMDBdif <- HMDB$accession[which(names(metWDifHF) %in% HMDB$Compound)]
+
+#make separate vector for metabolites that do not have HMDB code for easy input to metaboanalyst
+WdifNoHMDB <- names(metWDifHF)[which(!(names(metWDifHF) %in% HMDB$Compound))]
+
 #fold change
 FC <- foldChangeMat(metNorm)
+
+#make table with just differentially abundant metabolites normalized data
+metNormDif <- metNorm[names(metWDifHF),]
 
 #HF M vs F
 #metWG_HF <- WilcoxG_HF(metNorm)
@@ -304,10 +314,20 @@ MetTable <- cbind(MetTable, upDown[rownames(MetTable)],FC[rownames(MetTable)], a
 colnames(MetTable) <- c("p-val", "HF status", "fold change", "log2FoldChange")
 
 MetTableDif <- MetTable[names(metWDifHF),]
+```
 
+```{R}
+
+#output tables and txt files 
 write.csv(MetTable, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortAllMetabolites.csv")
 write.csv(MetTableDif, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortDifferentialMetabolites.csv")
-write.csv(metNormTotal, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortMetabolomicsNormalized.csv")
+write.csv(metNorm, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortsNormalizedMetabolites.csv")
+write.csv(metNormDif, file="C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/HumanHFcohortsNormalizedMetabolitesDiff.csv")
+
+write.table(names(metWDifHF), file = "C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/wilcoxonDifList.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(WdifNoHMDB, file = "C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/wilcoxonDifListNoHMDB.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(HMDBdif, file = "C:/Users/eflam/Box Sync/Data/Human HF cohort/pipeline output tables/wilcoxonDifHMDB.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
 ```
 
 ```{R}
