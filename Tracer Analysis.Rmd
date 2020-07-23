@@ -12,9 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## import data
 ```{R}
 #set wd lab desktop
-setwd("C:/Users/eflam/Box Sync/Data/slice tracing/")
+#setwd("C:/Users/eflam/Box Sync/Data/slice tracing/")
 #setwd laptop
-#setwd("C:/Users/Emily/Desktop/Box Sync/Data/slice tracing/")
+setwd("C:/Users/Emily/Desktop/Box Sync/Data/slice tracing/")
 
 #Import data
 normalized <- read.csv("020119(Ex emily human heart slice 13c-tracer time course EF1-46) normalized.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
@@ -59,10 +59,14 @@ rownames(normalized)[nrow(normalized)] <- "Time"
 #combine all values for a metabolite (except M+0) to get total enrichment regardless of number of carbons
 ```{R}
 
-totalEnrich <- numeric(length = length(unique(normalized$Compound)))
-names(totalEnrich) <- unique(normalized$Compound)
+#make data frame to fill in with total enrichment values
+totEnrichment <- data.frame(col.names = colnames(normalized))
 for (i in unique(normalized$Compound)){
-  totalEnrich[i] <- sum(normalized[which(normalized$Compound == i && normalized$Label != 0),])
+  totalEnrich <- numeric(length = length(unique(normalized$Compound)))
+  names(totalEnrich) <- unique(normalized$Compound)
+  for (x in 1:ncol(normalized)){
+  totalEnrich[x] <- sum(normalized[which(normalized$Compound == i && normalized$Label != 0),])
+  }
 }
 
 ```
