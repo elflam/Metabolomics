@@ -9,19 +9,26 @@ I've made a sample dataset called "polar.csv"
 The dataset has two groups, basal and treated, each with 4 samples. Metabolites are organized in rows for now.
 ```{r}
 library(readr)
-mydata <- read_csv(file.choose())
-summary(mydata)
+#desktop
+#mydata <- read_csv(file="C:/Users/eflam/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs/LC carnitines normalized Blood.csv")
+#laptop
+mydata <- read_csv(file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs/metabolite groups for polar plots/final combined cohort/nucleotide synthesis no EC.csv")
+#summary(mydata)
+
 ```
 
 
 Normalize row-wise to mean 0 and variance 1 (you may do without, but it's like when you do a heatmap, if you're values are not scaled it's gonna be hard to compare them.)
 ```{r}
 
+mydata[,2:ncol(mydata)] <- apply(mydata[,2:ncol(mydata)],2,as.numeric)
+
 mydata.t <- t(mydata[,2:ncol(mydata)])
+#mydata.t <- apply(mydata.t,2,as.numeric,na.rm=TRUE)
 mydata.norm <- t(scale(mydata.t))
 
-mean(mydata.norm[1,]) # this should be close to 0
-var(mydata.norm[1,]) # this should be 1
+mean(mydata.norm[1,],na.rm=TRUE) # this should be close to 0
+var(mydata.norm[1,],na.rm=TRUE) # this should be 1
 class(mydata.norm) # it's a matrix now, we want it back to dataframe
 mydata.norm <- data.frame(mydata.norm, Metabolites= mydata$Metabolites)
 
@@ -29,22 +36,48 @@ class(mydata.norm)
 ```
 
 
-Calculate mean,SE and upper and lower limit for the error bars of each group
+Calculate mean,SE and upper and lower limit for the error bars of each group - PLASMA
 ```{r}
 library(tidyverse)
 library(plotrix) # we need this package to use the function std.error
 Data <- mydata.norm %>% rowwise() %>% mutate(
-                                        Mean.basal = mean(c(basal_1, basal_2, basal_3, basal_4), na.rm=T), 
-                                        Mean.treated = mean(c(treat_1, treat_2, treat_3, treat_4), na.rm=T),
-                                        SE.basal = std.error(c(basal_1, basal_2, basal_3, basal_4)),
-                                        SE.treated = std.error(c(treat_1, treat_2, treat_3, treat_4)),
+                                        Mean.basal = mean(c(NF_X1381_Norm, NF_X1421_Norm, NF_X1454_Norm,	NF_X1473_Norm, NF_X1500_Norm, NF_X1528_Norm, NF_X1578_Norm, NF_X1604_Norm,	NF_X1622_Norm, NF_X1635_Norm,	NF_X1644_Norm,	NF_X1647_Norm, NF_X1648_Norm,	NF_X1650_Norm, NF_X1660_Norm,	NF_X1669_Norm,	NF_X1670_Norm, NF_X1673_Norm,	NF_X1676_Norm, NF_X1678_Norm,	NF_X1681_Norm, NF_X1690_Norm, NF_X1696_Norm,	NF_X1698_Norm, NF_X1700_Norm,	NF_X1705_Norm, NF_X1708_Norm, NF_X1711_Norm,	NF_X1713_Norm, NF_X1716_Norm,	NF_X1718_Norm, NF_X1723_Norm, NF_X1727_Norm,	NF_X1728_Norm, NF_X1731_Norm,	NF_X1732_Norm, NF_X1739_Norm, NF_X1741_Norm,	NF_X1744_Norm, NF_X1747_Norm,	NF_X1750_Norm,	NF_X1754_Norm, NF_X1755_Norm,	NF_X1758_Norm, NF_X1759_Norm,	NF_X1762_Norm,	NF_X1763_Norm, NF_X1766_Norm,	NF_X1767_Norm, NF_X1771_Norm, NF_X1779_Norm,	NF_X1785_Norm, NF_X1789_Norm), na.rm=T), 
+                                        Mean.treated = mean(c(HF_X1466_Norm, HF_X1538_Norm, HF_X1618_Norm,	HF_X1657_Norm, HF_X1658_Norm,	HF_X1668_Norm, HF_X1686_Norm, HF_X1689_Norm,	HF_X1692_Norm, HF_X1704_Norm,	HF_X1706_Norm,	HF_X1709_Norm, HF_X1736_Norm, HF_X1737_Norm, HF_X1742_Norm, HF_X1764_Norm,	HF_X1768_Norm, HF_X1770_Norm,	HF_X1776_Norm, HF_X1780_Norm,	HF_X1787_Norm, HF_X1792_Norm, HF_X1793_Norm,	HF_X1794_Norm), na.rm=T),
+                                        SE.basal = std.error(c(NF_X1381_Norm, NF_X1421_Norm, NF_X1454_Norm,	NF_X1473_Norm, NF_X1500_Norm, NF_X1528_Norm, NF_X1578_Norm, NF_X1604_Norm,	NF_X1622_Norm, NF_X1635_Norm,	NF_X1644_Norm,	NF_X1647_Norm, NF_X1648_Norm,	NF_X1650_Norm, NF_X1660_Norm,	NF_X1669_Norm,	NF_X1670_Norm, NF_X1673_Norm,	NF_X1676_Norm, NF_X1678_Norm,	NF_X1681_Norm, NF_X1690_Norm, NF_X1696_Norm,	NF_X1698_Norm, NF_X1700_Norm,	NF_X1705_Norm, NF_X1708_Norm, NF_X1711_Norm,	NF_X1713_Norm, NF_X1716_Norm,	NF_X1718_Norm, NF_X1723_Norm, NF_X1727_Norm,	NF_X1728_Norm, NF_X1731_Norm,	NF_X1732_Norm, NF_X1739_Norm, NF_X1741_Norm,	NF_X1744_Norm, NF_X1747_Norm,	NF_X1750_Norm,	NF_X1754_Norm, NF_X1755_Norm,	NF_X1758_Norm, NF_X1759_Norm,	NF_X1762_Norm,	NF_X1763_Norm, NF_X1766_Norm,	NF_X1767_Norm, NF_X1771_Norm, NF_X1779_Norm,	NF_X1785_Norm, NF_X1789_Norm),na.rm=T),
+                                        SE.treated = std.error(c(HF_X1466_Norm, HF_X1538_Norm, HF_X1618_Norm,	HF_X1657_Norm, HF_X1658_Norm,	HF_X1668_Norm, HF_X1686_Norm, HF_X1689_Norm,	HF_X1692_Norm, HF_X1704_Norm,	HF_X1706_Norm,	HF_X1709_Norm, HF_X1736_Norm, HF_X1737_Norm, HF_X1742_Norm, HF_X1764_Norm,	HF_X1768_Norm, HF_X1770_Norm,	HF_X1776_Norm, HF_X1780_Norm,	HF_X1787_Norm, HF_X1792_Norm, HF_X1793_Norm,	HF_X1794_Norm),na.rm=T),
                                         Down.basal = Mean.basal - SE.basal,
                                         Up.basal = Mean.basal + SE.basal,
                                         Down.treated = Mean.treated - SE.treated,
-                                        Up.treated = Mean.treated + SE.treated)
+                                        Up.treated = Mean.treated + SE.treated,na.rm=T)
 class(Data)
 
-``` 
+
+
+
+
+```
+
+
+TISSUE
+```{r}
+library(tidyverse)
+library(plotrix) # we need this package to use the function std.error
+Data <- mydata.norm %>% rowwise() %>% mutate(
+                                        Mean.basal = mean(c(NF_X1052_Norm, NF_X1155_Norm, NF_X1160_Norm, NF_X1200_Norm, NF_X1221_Norm, NF_X1294_Norm, NF_X1310_Norm, NF_X1325_Norm, NF_X1356_Norm, NF_X1381_Norm, NF_X1421_Norm, NF_X1454_Norm, NF_X1473_Norm, NF_X1500_Norm, NF_X1528_Norm, NF_X1578_Norm, NF_X1580_Norm, NF_X1604_Norm,	NF_X1622_Norm, NF_X1635_Norm,	NF_X1644_Norm, NF_X1647_Norm, NF_X1648_Norm,	NF_X1650_Norm, NF_X1660_Norm,	NF_X1669_Norm, NF_X1670_Norm, NF_X1673_Norm,	NF_X1676_Norm, NF_X1681_Norm,	NF_X1690_Norm, NF_X1696_Norm, NF_X1698_Norm, NF_X1700_Norm, NF_X1705_Norm,	NF_X1708_Norm, NF_X1711_Norm, NF_X1713_Norm,	NF_X1716_Norm, NF_X1718_Norm,	NF_X1723_Norm,	NF_X1727_Norm, NF_X1728_Norm, NF_X1731_Norm, NF_X1732_Norm, NF_X1739_Norm,	NF_X1741_Norm, NF_X1744_Norm, NF_X1747_Norm, NF_X1750_Norm,	NF_X1754_Norm, NF_X1758_Norm, NF_X1759_Norm,	NF_X1763_Norm, NF_X1766_Norm,	NF_X1767_Norm,	NF_X1771_Norm, NF_X1779_Norm,	NF_X1785_Norm, NF_X1789_Norm), na.rm=T), 
+                                        Mean.treated = mean(c(HF_X1007_Norm, HF_X1018_Norm, HF_X1048_Norm, HF_X1051_Norm, HF_X1104_Norm, HF_X1127_Norm, HF_X1142_Norm, HF_X1179_Norm, HF_X1275_Norm, HF_X1282_Norm, HF_X1290_Norm, HF_X1292_Norm, HF_X1298_Norm, HF_X1300_Norm, HF_X1304_Norm, HF_X1466_Norm, HF_X1538_Norm, HF_X1618_Norm, HF_X1657_Norm, HF_X1658_Norm, HF_X1668_Norm, HF_X1686_Norm, HF_X1689_Norm, HF_X1692_Norm, HF_X1704_Norm, HF_X1706_Norm, HF_X1709_Norm, HF_X1720_Norm, HF_X1725_Norm, HF_X1736_Norm, HF_X1737_Norm, HF_X1742_Norm, HF_X1764_Norm, HF_X1768_Norm, HF_X1770_Norm, HF_X1776_Norm, HF_X1787_Norm, HF_X1792_Norm, HF_X1793_Norm, HF_X1794_Norm), na.rm=T),
+                                        SE.basal = std.error(c(NF_X1052_Norm, NF_X1155_Norm, NF_X1160_Norm, NF_X1200_Norm, NF_X1221_Norm, NF_X1294_Norm, NF_X1310_Norm, NF_X1325_Norm, NF_X1356_Norm, NF_X1381_Norm, NF_X1421_Norm, NF_X1454_Norm, NF_X1473_Norm, NF_X1500_Norm, NF_X1528_Norm, NF_X1578_Norm, NF_X1580_Norm, NF_X1604_Norm,	NF_X1622_Norm, NF_X1635_Norm,	NF_X1644_Norm, NF_X1647_Norm, NF_X1648_Norm,	NF_X1650_Norm, NF_X1660_Norm,	NF_X1669_Norm, NF_X1670_Norm, NF_X1673_Norm,	NF_X1676_Norm, NF_X1681_Norm,	NF_X1690_Norm, NF_X1696_Norm, NF_X1698_Norm, NF_X1700_Norm, NF_X1705_Norm,	NF_X1708_Norm, NF_X1711_Norm, NF_X1713_Norm,	NF_X1716_Norm, NF_X1718_Norm,	NF_X1723_Norm,	NF_X1727_Norm, NF_X1728_Norm, NF_X1731_Norm, NF_X1732_Norm, NF_X1739_Norm,	NF_X1741_Norm, NF_X1744_Norm, NF_X1747_Norm, NF_X1750_Norm,	NF_X1754_Norm, NF_X1758_Norm, NF_X1759_Norm,	NF_X1763_Norm, NF_X1766_Norm,	NF_X1767_Norm,	NF_X1771_Norm, NF_X1779_Norm,	NF_X1785_Norm, NF_X1789_Norm),na.rm=T),
+                                        SE.treated = std.error(c(HF_X1007_Norm, HF_X1018_Norm, HF_X1048_Norm, HF_X1051_Norm, HF_X1104_Norm, HF_X1127_Norm, HF_X1142_Norm, HF_X1179_Norm, HF_X1275_Norm, HF_X1282_Norm, HF_X1290_Norm, HF_X1292_Norm, HF_X1298_Norm, HF_X1300_Norm, HF_X1304_Norm, HF_X1466_Norm, HF_X1538_Norm, HF_X1618_Norm, HF_X1657_Norm, HF_X1658_Norm, HF_X1668_Norm, HF_X1686_Norm, HF_X1689_Norm, HF_X1692_Norm, HF_X1704_Norm, HF_X1706_Norm, HF_X1709_Norm, HF_X1720_Norm, HF_X1725_Norm, HF_X1736_Norm, HF_X1737_Norm, HF_X1742_Norm, HF_X1764_Norm, HF_X1768_Norm, HF_X1770_Norm, HF_X1776_Norm, HF_X1787_Norm, HF_X1792_Norm, HF_X1793_Norm, HF_X1794_Norm),na.rm=T),
+                                        Down.basal = Mean.basal - SE.basal,
+                                        Up.basal = Mean.basal + SE.basal,
+                                        Down.treated = Mean.treated - SE.treated,
+                                        Up.treated = Mean.treated + SE.treated,na.rm=T)
+class(Data)
+
+
+
+
+
+```
 
 Gather values in long format
 Change format to long and calculate mean+ and - SE in separate columns
@@ -60,7 +93,7 @@ data.DOWN <- Data[,c("Metabolites", "Down.basal", "Down.treated")] %>%
 
 dataMeanSe <- cbind(data.means,data.SE, data.UP, data.DOWN)
 dataMeanSe$Sample <- factor(dataMeanSe$Sample)
-dataMeanSe$Treatment <- factor(ifelse(grepl("basal", dataMeanSe$Sample), "basal","treated"))
+dataMeanSe$Treatment <- factor(ifelse(grepl("basal", dataMeanSe$Sample), "NF","HF"))
 
 #drop some unneeded columns
 data.polar <- dataMeanSe[c(1,3,6,9,12, 13)]
