@@ -25,13 +25,13 @@ for (i in diffTwo){
 
 #add missing rows to the second file
 for (i in diffOne){
-  second <- rbind(second,c(rep(NA,ncol(first))))
+  second <- rbind(second,c(rep(NA,ncol(second))))
   rownames(second)[nrow(second)] <- i
 }
 
 #merge the two files
 total <- cbind(first,second)
-total <- total[sort(rownames(total)),]
+#total <- total[sort(rownames(total)),]
 
 #save file
 write.csv(total, file="C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs/tissue/all tissue OA and filtered and normalized.csv") 

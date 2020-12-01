@@ -236,11 +236,11 @@ import data
 ```{R}
 #Set working directory
 #on laptop
-setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs/")
+setwd("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs")
 #on lab desktop
 #setwd("C:/Users/eflam/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs")
 #Load file
-metabolomics <- read.csv("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs/tissue/cohort 1 combined original and new metabolites raw.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
+metabolomics <- read.csv("C:/Users/Emily/Desktop/Box Sync/Data/Human HF cohort/raw metabolomics data and pipeline inputs/tissue/cohort 1 combined original and new metabolites raw (2).csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 #metabolomics2 <- read.csv("Tissue/010319(HILIC emily human heart patient 1007-1635) neg.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 DiseaseID <- read.csv("HumanHFcohortDiseaseIds.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
 HMDB <- read.csv("CAMP_compounds_HMDB.csv", header=TRUE, sep=",",quote="",na.strings="", comment.char="", stringsAsFactors = FALSE)
@@ -317,8 +317,8 @@ metNormDif <- metNorm[names(metTDifHF),]
 #metWDifR_NF <- metWR_NF[which(metWR_NF < 0.05)]
 
 #Met ~ EF
-#metEF <- WilcoxMet_EF(metNorm)
-#metWDif_EF <- metEF[which(metEF < 0.05)]
+metEF <- WilcoxMet_EF(metNorm)
+metWDif_EF <- metEF[which(metEF < 0.05)]
 
 ```
 
