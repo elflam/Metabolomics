@@ -1,0 +1,90 @@
+---
+title: "Polar plots"
+output: html_notebook
+---
+
+
+# Load dataset 
+I've made a sample dataset called "polar.csv" 
+The dataset has two groups, basal and treated, each with 4 samples. Metabolites are organized in rows for now.
+```{r}
+library(readr)
+mydata <- read_csv(file.choose())
+summary(mydata)
+```
+
+
+Normalize row-wise to mean 0 and variance 1 (you may do without, but it's like when you do a heatmap, if you're values are not scaled it's gonna be hard to compare them.)
+```{r}
+
+mydata.t <- t(mydata[,2:ncol(mydata)])
+mydata.norm <- t(scale(mydata.t))
+
+mean(mydata.norm[1,]) # this should be close to 0
+var(mydata.norm[1,]) # this should be 1
+class(mydata.norm) # it's a matrix now, we want it back to dataframe
+mydata.norm <- data.frame(mydata.norm, Metabolites= mydata$Metabolites)
+
+class(mydata.norm)
+```
+
+
+Calculate mean,SE and upper and lower limit for the error bars of each group
+```{r}
+library(tidyverse)
+library(plotrix) # we need this package to use the function std.error
+Data <- mydata.norm %>% rowwise() %>% mutate(
+                                        Mean.basal = mean(c(basal_1, basal_2, basal_3, basal_4), na.rm=T), 
+                                        Mean.treated = mean(c(treat_1, treat_2, treat_3, treat_4), na.rm=T),
+                                        SE.basal = std.error(c(basal_1, basal_2, basal_3, basal_4)),
+                                        SE.treated = std.error(c(treat_1, treat_2, treat_3, treat_4)),
+                                        Down.basal = Mean.basal - SE.basal,
+                                        Up.basal = Mean.basal + SE.basal,
+                                        Down.treated = Mean.treated - SE.treated,
+                                        Up.treated = Mean.treated + SE.treated)
+class(Data)
+
+``` 
+
+Gather values in long format
+Change format to long and calculate mean+ and - SE in separate columns
+```{r}
+data.means <- Data[,c("Metabolites", "Mean.basal", "Mean.treated")] %>%
+  gather(Sample, Mean, -Metabolites)
+data.SE <- Data[,c("Metabolites",  "SE.basal", "SE.treated")] %>%
+  gather(Sample, SE, -Metabolites)
+data.UP <- Data[,c("Metabolites", "Up.basal", "Up.treated")] %>%
+  gather(Sample, Up, -Metabolites)
+data.DOWN <- Data[,c("Metabolites", "Down.basal", "Down.treated")] %>%
+  gather(Sample, Down, -Metabolites)
+
+dataMeanSe <- cbind(data.means,data.SE, data.UP, data.DOWN)
+dataMeanSe$Sample <- factor(dataMeanSe$Sample)
+dataMeanSe$Treatment <- factor(ifelse(grepl("basal", dataMeanSe$Sample), "basal","treated"))
+
+#drop some unneeded columns
+data.polar <- dataMeanSe[c(1,3,6,9,12, 13)]
+```
+
+
+To generate the polar plot, first we work with a normal line plot and add error bars as ribbon (or any style you want)
+```{r}
+
+a <- data.polar %>% 
+  ggplot(aes(x=Metabolites, y = Mean, group=Treatment)) +
+  #geom_boxplot(aes(group = Group, colour = Genotype, fill = Treatment, alpha = 0.2))
+  geom_ribbon(aes(ymin = Down, ymax = Up, fill = Treatment), alpha = 0.15) +
+  scale_fill_manual(values= c("blue", "red")) +
+  geom_line(aes(colour = Treatment)) +
+  scale_color_manual(values= c("blue", "red")) +
+  theme_light() +
+  theme(panel.grid.minor = element_blank())  
+
+plot(a)
+```
+
+Now we change coordinate system
+```{r}
+a + coord_polar() 
+```
+
